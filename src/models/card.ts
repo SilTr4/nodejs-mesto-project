@@ -17,7 +17,12 @@ export const cardSchema = new mongoose.Schema<TCard>({
   },
   link: {
     type: String,
-    required: true
+    required: true,
+    validate: {
+      validator: (v: string) => {
+        return /^https?:\/\/(w{3}\.)?[A-Za-z0-9\-]+\.[A-Za-z]{2,6}\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)$/.test(v);
+      }
+    }
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,

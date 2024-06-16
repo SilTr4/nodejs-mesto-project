@@ -9,7 +9,8 @@ export const getAllCards = (req: Request, res: Response, next: NextFunction) => 
 }
 
 export const createCard = (req: Request, res: Response, next: NextFunction) => {
-  const { name, link, user } = req.body;
+  const { name, link } = req.body;
+  const user = res.locals.user._id;
   Cards.create({ name, link, owner: user })
     .then(card => res.send(card))
     .catch(err => next(err));
@@ -19,7 +20,11 @@ export const deleteCard = (req: Request, res: Response, next: NextFunction) => {
   Cards.findByIdAndDelete(req.params.cardId)
     .then((card) => {
       if (!card) {
-        throw new CustomError('Карточка с указанным _id не найдена.')
+        throw new CustomError('Карточка с указанным _id не найдена.', 404)
+      }
+      if (card.owner !== res.locals.user._id) {
+        res.send({ response: 'Вы не можете удалять чужие карточки'})
+        return;
       }
       res.send({ status: "success" })
     })
@@ -27,10 +32,10 @@ export const deleteCard = (req: Request, res: Response, next: NextFunction) => {
 }
 
 export const likeCard = (req: Request, res: Response, next: NextFunction) => {
-  Cards.findByIdAndUpdate(req.params.cardId, { $addToSet: { likes: req.body.user }}, { new: true })
+  Cards.findByIdAndUpdate(req.params.cardId, { $addToSet: { likes: res.locals.user._id }}, { new: true })
     .then((card) => {
       if (!card) {
-        throw new CustomError('Карточка с указанным _id не найдена.')
+        throw new CustomError('Карточка с указанным _id не найдена.', 404)
       }
       res.send(card)
     })
@@ -38,10 +43,10 @@ export const likeCard = (req: Request, res: Response, next: NextFunction) => {
 }
 
 export const dislikeCard = (req: Request, res: Response, next: NextFunction) => {
-  Cards.findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.body.user._id }}, { new: true })
+  Cards.findByIdAndUpdate(req.params.cardId, { $pull: { likes: res.locals.user._id  }}, { new: true })
     .then((card) => {
       if (!card) {
-        throw new CustomError('Карточка с указанным _id не найдена.')
+        throw new CustomError('Карточка с указанным _id не найдена.', 404)
       }
       res.send(card)
     })
