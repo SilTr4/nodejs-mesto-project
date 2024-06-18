@@ -24,10 +24,10 @@ export const createCard = async (req: Request, res: Response, next: NextFunction
     const card = await Cards.create({ name, link, owner: user });
     return res.send(card);
   } catch (err) {
-    if (err instanceof mongoose.Error.CastError) {
+    if (err instanceof mongoose.Error.ValidationError) {
       return next(
         new CustomError(
-          'Нет карточки с таким id',
+          'Введены некоректные данные',
           errorsCodes.notFoundError,
         ),
       );
@@ -38,15 +38,14 @@ export const createCard = async (req: Request, res: Response, next: NextFunction
 
 export const deleteCard = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const card = await Cards.findByIdAndDelete(req.params.cardId).orFail();
+    const card = await Cards.findByIdAndDelete(req.params.cardId).orFail(
+      () => { throw new CustomError('Карточка с указанным _id не найдена.', errorsCodes.notFoundError); },
+    );
     if (card.owner !== res.locals.user._id) {
       return res.send({ response: 'Вы не можете удалять чужие карточки' });
     }
     return res.send({ status: 'success' });
   } catch (err) {
-    if (err instanceof mongoose.Error.CastError) {
-      return next(new CustomError('Карточка с указанным _id не найдена.', errorsCodes.notFoundError));
-    }
     return next(err);
   }
 };

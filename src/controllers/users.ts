@@ -25,10 +25,10 @@ export const getUSer = async (
   next: NextFunction,
 ) => {
   try {
-    const userData = await Users.findById(req.params.userId);
+    const userData = await Users.findById(req.params.userId).orFail();
     return res.send(userData);
   } catch (err) {
-    if (err instanceof mongoose.Error.CastError) {
+    if (err instanceof mongoose.Error.DocumentNotFoundError) {
       return next(
         new CustomError(
           'Нет пользователя с таким id',
@@ -49,10 +49,6 @@ export const createUser = async (
     const {
       name, about, avatar, email, password,
     } = req.body;
-
-    if (!password) {
-      return res.send({ message: 'Введен некоректный логин или пароль' });
-    }
     const hashPass = await bcrypt.hash(password, 10);
     const user = await Users.create({
       name,
@@ -95,14 +91,6 @@ export const updateUserData = async (
     );
     return res.send(userData);
   } catch (err) {
-    if (err instanceof mongoose.Error.CastError) {
-      return next(
-        new CustomError(
-          'Нет пользователя с таким id',
-          errorsCodes.notFoundError,
-        ),
-      );
-    }
     if (err instanceof mongoose.Error.ValidationError) {
       return next(
         new CustomError('Введите коректные данные', errorsCodes.reqError),
@@ -127,14 +115,6 @@ export const updateUserAvatar = async (
     );
     return res.send(userData);
   } catch (err) {
-    if (err instanceof mongoose.Error.CastError) {
-      return next(
-        new CustomError(
-          'Нет пользователя с таким id',
-          errorsCodes.notFoundError,
-        ),
-      );
-    }
     if (err instanceof mongoose.Error.ValidationError) {
       return next(
         new CustomError('Введите коректные данные', errorsCodes.reqError),

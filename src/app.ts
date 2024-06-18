@@ -7,6 +7,7 @@ import cardsRouter from './routes/cards';
 import { createUser, login } from './controllers/users';
 import auth from './middlewares/auth';
 import loggers from './middlewares/logger';
+import errorsCodes from './utils/constants';
 
 const { PORT = 3000 } = process.env;
 
@@ -41,7 +42,7 @@ app.use('/', usersRouter);
 app.use('/', cardsRouter);
 
 app.all('*', (req: Request, res: Response) => {
-  res.status(404).send('страница не найдена');
+  res.status(errorsCodes.notFoundError).send('страница не найдена');
 });
 
 app.use(loggers.errorLogger);

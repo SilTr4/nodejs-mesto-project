@@ -35,7 +35,7 @@ export const cardSchema = new mongoose.Schema<TCard>({
   },
   createdAt: {
     type: Date,
-    default: Date.now(),
+    default: () => Date.now(),
   },
 });
 
