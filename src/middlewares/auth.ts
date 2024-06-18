@@ -1,6 +1,6 @@
-import { CustomError } from "../errors/CustomError";
-import { NextFunction, Request, Response } from "express";
-import jwt from "jsonwebtoken";
+import { NextFunction, Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
+import CustomError from '../errors/CustomError';
 
 export default (req: Request, res: Response, next: NextFunction) => {
   const { authorization } = req.headers;
@@ -23,5 +23,5 @@ export default (req: Request, res: Response, next: NextFunction) => {
 
   res.locals.user = payload;
 
-  next();
-}
+  return next();
+};

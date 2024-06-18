@@ -1,6 +1,9 @@
-import { Router } from "express";
-import { Joi, celebrate } from "celebrate";
-import { getAllUSers, getUSer, createUser, updateUserAvatar, updateUserData, login } from "../controllers/users";
+import { Router } from 'express';
+import { Joi, celebrate } from 'celebrate';
+import {
+  getAllUSers, getUSer, updateUserAvatar, updateUserData,
+} from '../controllers/users';
+
 const router = Router();
 
 router.get('/users', getAllUSers);

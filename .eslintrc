@@ -37,7 +37,7 @@
               "js": "never",
               "ts": "never"
           }
-        ]
-  },
-  "eslint no-underscore-dangle": ["error", { "allow": ["foo_", "_bar"] }]
+        ],
+        "no-underscore-dangle": ["error", { "allow": ["_id"] } ]
+  }
 }

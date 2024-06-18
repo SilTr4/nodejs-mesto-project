@@ -1,12 +1,12 @@
-import express, { NextFunction, Request, Response } from 'express';
+import express, { Request, Response } from 'express';
 import mongoose from 'mongoose';
+import { Joi, celebrate, errors } from 'celebrate';
+import errorHandler from './middlewares/errorHandler';
 import usersRouter from './routes/users';
 import cardsRouter from './routes/cards';
-import { Joi, celebrate, errors } from 'celebrate';
-import { CustomError } from './errors/CustomError';
 import { createUser, login } from './controllers/users';
 import auth from './middlewares/auth';
-import loggers from './middlewares/logger'
+import loggers from './middlewares/logger';
 
 const { PORT = 3000 } = process.env;
 
@@ -40,18 +40,13 @@ app.use(auth);
 app.use('/', usersRouter);
 app.use('/', cardsRouter);
 
+app.all('*', (req: Request, res: Response) => {
+  res.status(404).send('страница не найдена');
+});
+
 app.use(loggers.errorLogger);
 
 app.use(errors);
-app.use((err: CustomError, req: Request, res: Response, next: NextFunction) => {
-  const { statusCode = 500, message } = err;
-
-
-  res.status(statusCode).send({ message:
-    statusCode === 500
-    ? 'На сервере произошла ошибка'
-    : message
-  });
-});
+app.use(errorHandler);
 
 app.listen(PORT);

@@ -1,4 +1,5 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
+import user from './user';
 
 type TCard = {
   name: string,
@@ -13,29 +14,29 @@ export const cardSchema = new mongoose.Schema<TCard>({
     type: String,
     required: true,
     minlength: 2,
-    maxlength: 30
+    maxlength: 30,
   },
   link: {
     type: String,
     required: true,
     validate: {
-      validator: (v: string) => {
-        return /^https?:\/\/(w{3}\.)?[A-Za-z0-9\-]+\.[A-Za-z]{2,6}\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)$/.test(v);
-      }
-    }
+      validator: (v: string) => /^https?:\/\/(w{3}\.)?[A-Za-z0-9-]+\.[A-Za-z]{2,6}\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)$/.test(v),
+    },
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
-    required: true
+    required: true,
+    ref: user,
   },
   likes: {
     type: [mongoose.Schema.Types.ObjectId],
-    default: []
+    default: [],
+    ref: user,
   },
   createdAt: {
     type: Date,
-    default: Date.now()
-  }
+    default: Date.now(),
+  },
 });
 
 export default mongoose.model<TCard>('card', cardSchema);
