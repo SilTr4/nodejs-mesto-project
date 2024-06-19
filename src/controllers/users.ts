@@ -25,15 +25,12 @@ export const getUSer = async (
   next: NextFunction,
 ) => {
   try {
-    const userData = await Users.findById(req.params.userId).orFail();
+    const userData = await Users.findById(req.params.userId).orFail(() => new CustomError('Пользователь с указанным _id не найден', errorsCodes.notFoundError));
     return res.send(userData);
   } catch (err) {
-    if (err instanceof mongoose.Error.DocumentNotFoundError) {
+    if (err instanceof mongoose.Error.CastError) {
       return next(
-        new CustomError(
-          'Нет пользователя с таким id',
-          errorsCodes.notFoundError,
-        ),
+        new CustomError('Введены некоректные данные.', errorsCodes.reqError),
       );
     }
     return next(err);
@@ -88,7 +85,7 @@ export const updateUserData = async (
       user,
       { name, about },
       { new: true, runValidators: true },
-    );
+    ).orFail(() => new CustomError('Пользователь с указанным _id не найден', errorsCodes.notFoundError));
     return res.send(userData);
   } catch (err) {
     if (err instanceof mongoose.Error.ValidationError) {
@@ -112,7 +109,7 @@ export const updateUserAvatar = async (
       user,
       { avatar },
       { new: true, runValidators: true },
-    );
+    ).orFail(() => new CustomError('Пользователь с указанным _id не найден', errorsCodes.notFoundError));
     return res.send(userData);
   } catch (err) {
     if (err instanceof mongoose.Error.ValidationError) {

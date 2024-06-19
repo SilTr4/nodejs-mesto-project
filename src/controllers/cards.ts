@@ -17,7 +17,11 @@ export const getAllCards = async (
   }
 };
 
-export const createCard = async (req: Request, res: Response, next: NextFunction) => {
+export const createCard = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const { name, link } = req.body;
     const user = res.locals.user._id;
@@ -26,41 +30,61 @@ export const createCard = async (req: Request, res: Response, next: NextFunction
   } catch (err) {
     if (err instanceof mongoose.Error.ValidationError) {
       return next(
-        new CustomError(
-          'Введены некоректные данные',
-          errorsCodes.notFoundError,
-        ),
+        new CustomError('Введены некоректные данные', errorsCodes.reqError),
       );
     }
     return next(err);
   }
 };
 
-export const deleteCard = async (req: Request, res: Response, next: NextFunction) => {
+export const deleteCard = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
-    const card = await Cards.findByIdAndDelete(req.params.cardId).orFail(
-      () => { throw new CustomError('Карточка с указанным _id не найдена.', errorsCodes.notFoundError); },
-    );
+    const card = await Cards.findByIdAndDelete(req.params.cardId).orFail(() => {
+      throw new CustomError(
+        'Карточка с указанным _id не найдена.',
+        errorsCodes.notFoundError,
+      );
+    });
     if (card.owner !== res.locals.user._id) {
       return res.send({ response: 'Вы не можете удалять чужие карточки' });
     }
     return res.send({ status: 'success' });
   } catch (err) {
+    if (err instanceof mongoose.Error.CastError) {
+      return next(
+        new CustomError('Введены некоректные данные.', errorsCodes.reqError),
+      );
+    }
     return next(err);
   }
 };
 
-export const likeCard = async (req: Request, res: Response, next: NextFunction) => {
+export const likeCard = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const card = await Cards.findByIdAndUpdate(
       req.params.cardId,
       { $addToSet: { likes: res.locals.user._id } },
       { new: true },
+    ).orFail(
+      () => new CustomError(
+        'Карточка с указанным _id не найдена.',
+        errorsCodes.notFoundError,
+      ),
     );
     return res.send(card);
   } catch (err) {
     if (err instanceof mongoose.Error.CastError) {
-      return next(new CustomError('Карточка с указанным _id не найдена.', errorsCodes.notFoundError));
+      return next(
+        new CustomError('Введены некоректные данные.', errorsCodes.reqError),
+      );
     }
     return next(err);
   }
@@ -76,11 +100,18 @@ export const dislikeCard = async (
       req.params.cardId,
       { $pull: { likes: res.locals.user._id } },
       { new: true },
+    ).orFail(
+      () => new CustomError(
+        'Карточка с указанным _id не найдена.',
+        errorsCodes.notFoundError,
+      ),
     );
     return res.send(card);
   } catch (err) {
     if (err instanceof mongoose.Error.CastError) {
-      return next(new CustomError('Карточка с указанным _id не найдена.', errorsCodes.notFoundError));
+      return next(
+        new CustomError('Введены некоректные данные.', errorsCodes.reqError),
+      );
     }
     return next(err);
   }
